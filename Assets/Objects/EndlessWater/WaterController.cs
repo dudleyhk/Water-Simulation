@@ -24,6 +24,16 @@ public class WaterController : MonoBehaviour
     }
 
 
+    private void Update()
+    {
+        Shader.SetGlobalFloat("_WaterScale", scale);
+        Shader.SetGlobalFloat("_WaterSpeed", speed);
+        Shader.SetGlobalFloat("_WaterDistance", waveDistance);
+        Shader.SetGlobalFloat("_WaterTime", Time.time);
+        Shader.SetGlobalFloat("_WaterNoiseStrength", noiseStrength);
+        Shader.SetGlobalFloat("_WaterNoiseWalk", noiseWalk);
+    }
+
     // Get the y coord from whatever wavetype we are using. 
     public float GetWaveYPos(Vector3 position, float timeSinceStart)
     {

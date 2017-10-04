@@ -31,15 +31,15 @@ public class EndlessWaterSquare : MonoBehaviour
 
         secondsSinceStart = Time.time;
 
-        ThreadPool.QueueUserWorkItem(new WaitCallback(UpdateWaterWithThreadPooling));
+        //ThreadPool.QueueUserWorkItem(new WaitCallback(UpdateWaterWithThreadPooling));
 
-        StartCoroutine(UpdateWater());
+        //StartCoroutine(UpdateWater());
     }
 
 
     private void Update()
     {
-        // UpdateNoThread();
+        UpdateWaterNoThread();
 
         secondsSinceStart = Time.time;
 
@@ -55,10 +55,10 @@ public class EndlessWaterSquare : MonoBehaviour
 
         transform.position = oceanPos;
 
-        for(int i = 0; i < waterSquares.Count; i++)
-        {
-            waterSquares[i].MoveSea(oceanPos, Time.time);
-        }
+       for(int i = 0; i < waterSquares.Count; i++)
+       {
+           waterSquares[i].MoveSea(oceanPos, Time.time);
+       }
     }
 
     //The loop that gives the updated vertices from the thread to the meshes
