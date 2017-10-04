@@ -5,7 +5,7 @@
 
 */
 // New shader.. .this is a folder and file name ie could change to Unlit/Custom/Hollogram
-Shader "Unlit/Hollogram"
+Shader "Unlit/MovingPlatform"
 {
 	/*
 		- Hold public variables in unity. 
@@ -90,9 +90,7 @@ Shader "Unlit/Hollogram"
 			{
 				// create new v2f struct.
 				v2f o;	
-
-
-				//v.vertex.x += sin(_Time.y * _Speed + v.vertex.y  *_Amplitude) * _Distance * _Amount; // = time.time .y is seconds. 
+				
 				v.vertex.x += _Amplitude * sin(_Time.y * _Speed) * _Distance * _Amount;
 
 				// - v.vertex is the model in vertex space.

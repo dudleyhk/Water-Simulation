@@ -5,7 +5,7 @@
 
 */
 // New shader.. .this is a folder and file name ie could change to Unlit/Custom/Hollogram
-Shader "Unlit/Hollogram"
+Shader "Unlit/Waves"
 {
 	/*
 		- Hold public variables in unity. 
@@ -93,7 +93,7 @@ Shader "Unlit/Hollogram"
 
 
 				//v.vertex.x += sin(_Time.y * _Speed + v.vertex.y  *_Amplitude) * _Distance * _Amount; // = time.time .y is seconds. 
-				v.vertex.x += _Amplitude * sin(_Time.y * _Speed) * _Distance * _Amount;
+				v.vertex.y +=  sin(_Time.y * + v.vertex.x *_Amplitude * _Speed) * _Distance * _Amount;
 
 				// - v.vertex is the model in vertex space.
 				// - Take vertex from model into clip space.
