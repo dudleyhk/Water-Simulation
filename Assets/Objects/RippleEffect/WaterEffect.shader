@@ -10,10 +10,12 @@ Shader "Custom/WaterEffect"
 		_Glossiness ("Smoothness", Range(0,1)) = 0.5
 		_Metallic ("Metallic", Range(0,1)) = 0.0
 
-		phase("Phase", Float) = 1
-		speed("Speed", Float) = 1
-		scale("Scale", Float) = 1
-		depth("Depth", Float) = 1
+		speed("Speed", Float) = -2
+		frequency("Waves per Second", Float) = 0.1
+		amp("Amplitude", Float) = 0.5
+
+		// originally 0.05
+		neighbourDist("Neighbour Sample Distance", Range(0, 10)) = 0.05
 	}
 	SubShader 
 	{
@@ -27,20 +29,20 @@ Shader "Custom/WaterEffect"
 		// Use shader model 3.0 target, to get nicer looking lighting
 		#pragma target 3.0
 
-		sampler2D _MainTex;
 
 		struct Input 
 		{
 			float2 uv_MainTex;
 		};
 
+		sampler2D _MainTex;
 		half _Glossiness;
 		half _Metallic;
 		fixed4 _Color;
-		float phase;
 		float speed;
-		float scale;
-		float depth;
+		float frequency;
+		float amp;
+		float neighbourDist;
 
 
 
@@ -51,25 +53,34 @@ Shader "Custom/WaterEffect"
 			// put more per-instance properties here
 		UNITY_INSTANCING_CBUFFER_END
 
+		float sineffect(float3 v)
+		{
+			// (v.x * v.x) + (v.z * v.z);  // start at centre
+			// (v.x + v.z); // start at corner.
+
+			half voffset = (v.x + v.z);
+			return amp * sin(_Time.y * speed + voffset * frequency);
+		}
 
 		void vert(inout appdata_full v, out Input o)
 		{
 			UNITY_INITIALIZE_OUTPUT(Input, o);
 
-			float3 v0 = mul(unity_ObjectToWorld, v.vertex).xyz;
+			float3 v0 = mul(float4x4(unity_ObjectToWorld), v.vertex).xyz;
 
-			float3 v1 = v0 + float3(0.05, 0, 0);
-			float3 v2 = v0 + float3(0, 0, 0.05);
+			// neighbour sampling \\
+			// Create two fake neighbour vertices.
+			// The imp[ortant thins is that they are distorted in the same way that a real vertex in their location would.
+			// This is pretty easy as we're just going to do some trig based on position, so really any samples will do. 
+			float3 v1 = v0 + float3(neighbourDist, 0, 0);
+			float3 v2 = v0 + float3(0, 0, neighbourDist);
 
-
-			v0.y += sin(phase + speed + (v0.x * scale)) * depth;
-			v1.y += sin(phase + speed + (v1.y * scale)) * depth;
-			v2.y += sin(phase + speed + (v2.y * scale)) * depth;
-
+			v0 += sineffect(v0);
+			v1 += sineffect(v1);
+			v2 += sineffect(v2);
 
 			float3 vna = cross(v2 - v0, v1 - v0);
 			float3 vn = mul(float4x4(unity_WorldToObject), vna);
-
 			v.normal = normalize(vn);
 
 			v.vertex.xyz = mul(float4x4(unity_WorldToObject), v0);
