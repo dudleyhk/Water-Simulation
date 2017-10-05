@@ -68,26 +68,26 @@ public class WaterSquare : MonoBehaviour
     {
         Vector3[] vertices = terrainMeshFilter.mesh.vertices;
 
-      //  for(int i = 0; i < vertices.Length; i++)
-      //  {
-      //      Vector3 vertex = vertices[i];
-      //
-      //      // From local to global 
-      //      // Vector3 vertexGlobal = squareTransform.TransformPoint(vertex);
-      //
-      //      Vector3 vertexGlobal = vertex + centrePos + oceanPos;
-      //
-      //      // DEBUG
-      //      if(i == 0)
-      //      {
-      //          // Debug.Log(vertexGlobal + " " + vertexGlobalTest);
-      //      }
-      //
-      //      // Get the water height at this coordinate
-      //      vertex.y = WaterController.instance.GetWaveYPos(vertexGlobal, timeSinceStart);
-      //
-      //      vertices[i] = vertex;
-      //  }
+        for (int i = 0; i < vertices.Length; i++)
+        {
+            Vector3 vertex = vertices[i];
+
+            // From local to global 
+            // Vector3 vertexGlobal = squareTransform.TransformPoint(vertex);
+
+            Vector3 vertexGlobal = vertex + centrePos + oceanPos;
+
+            // DEBUG
+            if (i == 0)
+            {
+                // Debug.Log(vertexGlobal + " " + vertexGlobalTest);
+            }
+
+            // Get the water height at this coordinate
+            vertex.y = WaterController.instance.GetWaveYPos(vertexGlobal, timeSinceStart);
+
+            vertices[i] = vertex;
+        }
 
         terrainMeshFilter.mesh.vertices = vertices;
         terrainMeshFilter.mesh.RecalculateNormals();

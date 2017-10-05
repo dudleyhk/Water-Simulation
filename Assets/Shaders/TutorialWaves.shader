@@ -35,7 +35,7 @@ Shader "Custom/WaterSurfaceShader"
 		#pragma surface surf Standard vertex:vert addshadow
 		
 		//Use shader model 3.0 target, to get nicer looking lighting
-		#pragma target 3.0
+		#pragma target 4.0
 		
 		#pragma glsl
 		
