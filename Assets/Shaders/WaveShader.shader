@@ -9,6 +9,12 @@
 		_Metallic ("Metallic", Range(0,1)) = 0.0
 
 		// Wave Properties
+		_NoiseTex           ("Texture", 2D) = "white" {}
+		_WaterScale    		("Water Scale",    Float) = 1
+		_WaterSpeed    		("Water Speed",    Float) = 1
+		_WaterDistance 		("Water Distance", Float) = 1
+		_WaterNoiseStrength ("Noise Strength", Float) = 1
+		_WaterNoiseWalk		("Noise Walk",     Float) = 1
 	}
 
 	SubShader 
@@ -21,6 +27,8 @@
 		#pragma target 4.0
 
 
+		// -------------------------------------------------------------------
+
 		// HLSL Predefined variables.
 		sampler2D _MainTex;
 		half _Glossiness;
@@ -28,6 +36,13 @@
 		fixed4 _Color;
 
 		// Waves variables
+		sampler2D 	_NoiseTex			;
+		float		_WaterScale    		;
+		float 		_WaterSpeed    		;	
+		float		_WaterDistance 		;	
+		float		_WaterNoiseStrength ;	
+		float 		_WaterNoiseWalk		; 	
+
 
 
 		struct Input 
@@ -35,22 +50,33 @@
 			float2 uv_MainTex;
 		};
 
+		// --------------------------------------------------------------------
 
-		// this doesn't seem to be needed at the moment... the normals are updating anyway.
-		void recalculateNormals(in appdata_full data)
-		{
-			float3 currentVertex = mul(float4x4(unity_ObjectToWorld), data.vertex).xyz;
-
-			// create fake vertices around current vertex.
-			float3 xFriend = currentVertex + float3(0.05, 0, 0);
-			float3 zFriend = currentVertex + float3(0, 0, 0.05);
-
+		/*Move the object from current space into world space, calculate the normals and change back. */
+		float3 recalculateNormals(float3 worldPos, float3 xVector, float3 zVector)
+		{			
 			// calculate the direction of its normal.
-			float3 vertexNormalLocal = cross(xFriend - currentVertex, zFriend - currentVertex);
-			float3 vertexNormalWorld = mul(float4x4(unity_WorldToObject), vertexNormalLocal);
-			data.normal = normalize(vertexNormalWorld);
+			float3 vertexNormalLocal = cross(zVector - worldPos, xVector - worldPos);
+			float3 vertexNormalWorld = mul(unity_WorldToObject, vertexNormalLocal);
+			float3 newNormal = normalize(vertexNormalWorld);
 
-			data.vertex.xyz = mul(float4x4(unity_WorldToObject), currentVertex);
+			return newNormal;
+		}
+
+
+		float3 getWavePos(float3 pos)
+		{
+			pos.y = 0.0;
+			float offset = pos.z;
+
+			// Dont understand the /WaterDistance bit..
+			pos.y +=  sin((_Time.y * _WaterSpeed + offset) / _WaterDistance) * _WaterScale;
+
+			// Add noise... I dont understand what the x value of float4 below is doing over time in a sin func?
+			pos.y += tex2Dlod(_NoiseTex, float4(pos.x, pos.z + sin(_Time.y * 0.1), 0.0, 0.0) * _WaterNoiseWalk).a * _WaterNoiseStrength;
+
+			return pos;
+
 		}
 
 
@@ -58,10 +84,24 @@
 		{
 			UNITY_INITIALIZE_OUTPUT(Input, o);
 
-			// TEST
-			v.vertex.y += sin(5 + v.vertex.x * _Time.w);
+			float4 worldPos = mul(unity_ObjectToWorld, v.vertex);
 
-			//recalculateNormals(v);
+			// because we don't know the exact vertice but we need two extra vectors for a cross product
+			//	make two short vectors... 
+			float3 xVector = worldPos + float3(0.05, 0, 0);
+			float3 zVector = worldPos + float3(0, 0, 0.05);
+
+			// Any effects.
+			// Anything done to the worldPos vertice has to be done to the friend vectors.
+			worldPos.xyz += getWavePos(worldPos.xyz);
+			xVector += getWavePos(xVector);
+			zVector += getWavePos(zVector);
+
+
+			v.normal = recalculateNormals(worldPos, xVector, zVector);
+
+			float4 localPos = mul(unity_WorldToObject, float4(worldPos.xyz, worldPos.w));
+			v.vertex = localPos;
 		}
 
 
