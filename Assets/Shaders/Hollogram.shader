@@ -91,9 +91,7 @@ Shader "Unlit/Hollogram"
 				// create new v2f struct.
 				v2f o;	
 
-
-				//v.vertex.x += sin(_Time.y * _Speed + v.vertex.y  *_Amplitude) * _Distance * _Amount; // = time.time .y is seconds. 
-				v.vertex.x += _Amplitude * sin(_Time.y * _Speed) * _Distance * _Amount;
+				v.vertex.y += _Amplitude * sin(_Time.y * _Speed + v.vertex.x) * _Distance * _Amount;
 
 				// - v.vertex is the model in vertex space.
 				// - Take vertex from model into clip space.
@@ -101,9 +99,10 @@ Shader "Unlit/Hollogram"
 
 				// take uv data from model and take data from main texture. 
 				o.uv = TRANSFORM_TEX(v.uv, _MainTex);
-				
+
 				// return the struct. 
 				return o;
+				
 			}
 			
 			/*

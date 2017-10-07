@@ -42,11 +42,12 @@
 		{
 			UNITY_INITIALIZE_OUTPUT(Input, o);
 
-			half offsetVert = (v.vertex.x * v.vertex.x) + (v.vertex.z * v.vertex.z);
+
+
+			half offsetVert = (v.x * v.x) + (v.z * v.z);
 			half value = _Amplitude * sin(_Time.y * _Speed + offsetVert * _Frequency);
 
 			v.vertex.y += value;
-			//o.customValue = value;
 		}
 
 

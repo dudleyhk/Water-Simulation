@@ -58,7 +58,8 @@ Shader "Custom/WaterEffect"
 			// (v.x * v.x) + (v.z * v.z);  // start at centre
 			// (v.x + v.z); 			   // start at corner.
 
-			half voffset = (v.x + v.z);
+
+			half voffset = (v.x * v.x) + (v.z * v.z);
 			return amp * sin(_Time.y * speed + voffset * frequency);
 		}
 
@@ -72,8 +73,8 @@ Shader "Custom/WaterEffect"
 			// Create two fake neighbour vertices.
 			// The important thins is that they are distorted in the same way that a real vertex in their location would.
 			// This is pretty easy as we're just going to do some trig based on position, so really any samples will do. 
-			float3 v1 = v0 + float3(neighbourDist, 0, 0);
-			float3 v2 = v0 + float3(0, 0, neighbourDist);
+			float3 v1 = v0 + float3(0.05, 0, 0);
+			float3 v2 = v0 + float3(0, 0, 0.05);
 
 			v0 += sineffect(v0);
 			v1 += sineffect(v1);
