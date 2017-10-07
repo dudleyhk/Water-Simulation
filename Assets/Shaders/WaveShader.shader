@@ -21,6 +21,9 @@
 
 	SubShader 
 	{
+		// TODO: Create a different Pass for the ripple code.
+
+		// TODO: Implement opacity code.
 		Tags { "RenderType"="Opaque" }
 		LOD 200
 		
@@ -66,7 +69,10 @@
 		}
 
 
-		float3 getWavePos(float3 pos)
+		// TODO: Implement Ripple code. 
+
+
+		float3 basicWave(float3 pos)
 		{
 			pos.y = 0.0;
 			float offset = pos.z;
@@ -94,11 +100,12 @@
 			float3 zVector = worldPos + float3(0, 0, 0.05);
 
 			// Any effects.
-			// Anything done to the worldPos vertice has to be done to the friend vectors.
-			worldPos.xyz += getWavePos(worldPos.xyz);
-			xVector += getWavePos(xVector);
-			zVector += getWavePos(zVector);
 
+
+			// Anything done to the worldPos vertice has to be done to the friend vectors.
+			worldPos.xyz += basicWave(worldPos.xyz);
+			xVector += basicWave(xVector);
+			zVector += basicWave(zVector);
 
 			v.normal = recalculateNormals(worldPos, xVector, zVector);
 
