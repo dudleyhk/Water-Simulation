@@ -13,12 +13,17 @@
 		// Wave Properties
 		_NoiseTex           ("Texture", 2D) = "white" {}
 		_WaterScale    		("Water Scale",      Float) = 1
-		_WaterSteepness     ("Water Steepness", Range(0,1)) = 0.5
 		_WaterSpeed    		("Water Speed",      Float) = 1
 		_WaterDistance 		("Water Distance",   Float) = 1
-		_WaterDirection     ("Water Direction",  Vector) = (0, 1, 0)
 		_WaterNoiseStrength ("Noise Strength",   Float) = 1
 		_WaterNoiseWalk		("Noise Walk",       Float) = 1
+
+		// Gerstners Properties
+		_WaveLength("Wave Length", Float) = 1
+		_Amplitude("Wave Height", Float) = 1
+		_WaveSpeed("Wave Speed", Float) = 1
+		_WaveDirection("Wave Direction", Vector) = (1, 0, 0)
+		_WaveSteepness("Wave Steepness", Range(0, 1)) = 0.5
 	}
 
 	SubShader 
@@ -45,12 +50,18 @@
 		// Waves variables
 		sampler2D 	_NoiseTex			;
 		float		_WaterScale    		;
-		float       _WaterSteepness     ;
 		float 		_WaterSpeed    		;	
 		float		_WaterDistance 		;	
-		fixed3      _WaterDirection     ;  
 		float		_WaterNoiseStrength ;	
 		float 		_WaterNoiseWalk		; 	
+
+		// Create multiple waves at different frequencies for realistic effect. 
+		// Gerstner Attributes
+		float _WaveLength;
+		float _Amplitude;
+		float _WaveSpeed;
+		float3 _WaveDirection;
+		float _WaveSteepness;
 
 
 
@@ -81,17 +92,40 @@
 			float offset = pos.z;
 
 			// Dont understand the /WaterDistance bit..
-			//pos.y +=  sin((_Time.y * _WaterSpeed + offset) / _WaterDistance) * _WaterScale;
-			float wave1 = sin((_Time.y * _WaterSpeed + offset) / _WaterDistance) * _WaterScale;
-			float wave2 = sin((_Time.y * _WaterSpeed) / (_WaterDistance / 4)) * (_WaterScale / 4);
-
+			pos.y += sin((_Time.y * _WaterSpeed + offset) / _WaterDistance) * _WaterScale;
 
 			// Add noise... I dont understand what the x value of float4 below is doing over time in a sin func?
 			pos.y += tex2Dlod(_NoiseTex, float4(pos.x, pos.z + sin(_Time.y * 0.1), 0.0, 0.0) * _WaterNoiseWalk).a * _WaterNoiseStrength;
 
+		
 			return pos;
-
 		}
+
+
+
+		float3 gerstnerWave(float3 worldPos)
+		{
+			// w
+			float freq = 2 / _WaveLength;      
+
+			// alpha
+			float phase = 2 * 3.1416 / _WaveLength;
+
+			// Q
+			float pinch = _WaveSteepness / (freq * _Amplitude);
+
+			// D
+			float dir = dot(worldPos.xz, _WaveDirection.xz);
+
+
+			float X = worldPos.x + (pinch * _Amplitude) * (_WaveDirection.x * cos(freq * dir + phase * _Time.y));
+			float Z = worldPos.z + (pinch * _Amplitude) * (_WaveDirection.z * cos(freq * dir + phase * _Time.y));
+			float Y = _Amplitude * sin(freq * dir + phase * _Time.y);
+
+
+			return float3(X, Y, Z);
+		}
+
 
 
 		void vert(inout appdata_full v, out Input o)
@@ -107,16 +141,14 @@
 
 			// Any effects.
 
-
 			// Anything done to the worldPos vertice has to be done to the friend vectors.
-			worldPos.xyz += basicWave(worldPos.xyz);
-			xVector += basicWave(xVector);
-			zVector += basicWave(zVector);
+			worldPos.xyz += gerstnerWave(worldPos.xyz);
+			xVector      += gerstnerWave(xVector);
+			zVector      += gerstnerWave(zVector);
 
 			v.normal = recalculateNormals(worldPos, xVector, zVector);
 
-			float4 localPos = mul(unity_WorldToObject, float4(worldPos.xyz, worldPos.w));
-			v.vertex = localPos;
+			v.vertex.xyz = mul(unity_WorldToObject, worldPos);
 		}
 
 
