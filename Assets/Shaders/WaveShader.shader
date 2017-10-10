@@ -12,11 +12,13 @@
 
 		// Wave Properties
 		_NoiseTex           ("Texture", 2D) = "white" {}
-		_WaterScale    		("Water Scale",    Float) = 1
-		_WaterSpeed    		("Water Speed",    Float) = 1
-		_WaterDistance 		("Water Distance", Float) = 1
-		_WaterNoiseStrength ("Noise Strength", Float) = 1
-		_WaterNoiseWalk		("Noise Walk",     Float) = 1
+		_WaterScale    		("Water Scale",      Float) = 1
+		_WaterSteepness     ("Water Steepness", Range(0,1)) = 0.5
+		_WaterSpeed    		("Water Speed",      Float) = 1
+		_WaterDistance 		("Water Distance",   Float) = 1
+		_WaterDirection     ("Water Direction",  Vector) = (0, 1, 0)
+		_WaterNoiseStrength ("Noise Strength",   Float) = 1
+		_WaterNoiseWalk		("Noise Walk",       Float) = 1
 	}
 
 	SubShader 
@@ -43,8 +45,10 @@
 		// Waves variables
 		sampler2D 	_NoiseTex			;
 		float		_WaterScale    		;
+		float       _WaterSteepness     ;
 		float 		_WaterSpeed    		;	
 		float		_WaterDistance 		;	
+		fixed3      _WaterDirection     ;  
 		float		_WaterNoiseStrength ;	
 		float 		_WaterNoiseWalk		; 	
 
@@ -68,7 +72,6 @@
 			return newNormal;
 		}
 
-
 		// TODO: Implement Ripple code. 
 
 
@@ -78,7 +81,10 @@
 			float offset = pos.z;
 
 			// Dont understand the /WaterDistance bit..
-			pos.y +=  sin((_Time.y * _WaterSpeed + offset) / _WaterDistance) * _WaterScale;
+			//pos.y +=  sin((_Time.y * _WaterSpeed + offset) / _WaterDistance) * _WaterScale;
+			float wave1 = sin((_Time.y * _WaterSpeed + offset) / _WaterDistance) * _WaterScale;
+			float wave2 = sin((_Time.y * _WaterSpeed) / (_WaterDistance / 4)) * (_WaterScale / 4);
+
 
 			// Add noise... I dont understand what the x value of float4 below is doing over time in a sin func?
 			pos.y += tex2Dlod(_NoiseTex, float4(pos.x, pos.z + sin(_Time.y * 0.1), 0.0, 0.0) * _WaterNoiseWalk).a * _WaterNoiseStrength;
@@ -130,3 +136,7 @@
 	}
 	FallBack "Diffuse"
 }
+
+
+
+
