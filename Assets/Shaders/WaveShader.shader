@@ -89,13 +89,13 @@
 		float3 basicWave(float3 pos)
 		{
 			pos.y = 0.0;
-			float offset = pos.z;
-
-			// Dont understand the /WaterDistance bit..
-			pos.y += sin((_Time.y * _WaterSpeed + offset) / _WaterDistance) * _WaterScale;
-
-			// Add noise... I dont understand what the x value of float4 below is doing over time in a sin func?
-			pos.y += tex2Dlod(_NoiseTex, float4(pos.x, pos.z + sin(_Time.y * 0.1), 0.0, 0.0) * _WaterNoiseWalk).a * _WaterNoiseStrength;
+			//float offset = pos.z;
+			//
+			//// Dont understand the /WaterDistance bit..
+			//pos.y += sin((_Time.y * _WaterSpeed + offset) / _WaterDistance) * _WaterScale;
+			//
+			//// Add noise... I dont understand what the x value of float4 below is doing over time in a sin func?
+			//pos.y += tex2Dlod(_NoiseTex, float4(pos.x, pos.z + sin(_Time.y * 0.1), 0.0, 0.0) * _WaterNoiseWalk).a * _WaterNoiseStrength;
 
 		
 			return pos;
