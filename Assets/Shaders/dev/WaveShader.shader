@@ -173,16 +173,16 @@
 			float phase = (2 * _WaveSpeed) / _WaveLength;
 
 
-			float3 windDirection1 = float3(0, 0, 1);
-			float3 windDirection2 = float3(1, 0, 0);
+			float3 windDirection1 = float3(1, 0, 0);
+			float3 windDirection2 = float3(0, 0, 0.1);
 
 
 			/* Amplitudes */
-			float amplitudeX1 = 0.25;
-			float amplitudeX2 = 0.25;
+			float amplitudeX1 = 0.5;
+			float amplitudeX2 = 0.5;
 
-			float amplitudeY1 = 1;
-			float amplitudeY2 = 1.5;
+			float amplitudeY1 = 0.5;
+			float amplitudeY2 = 1;
 
 			float amplitudeZ1 = 0.1;
 			float amplitudeZ2 = 1;
@@ -190,8 +190,8 @@
 
 
 			/* Wave Length */
-			float waveLengthX1 = 25;
-			float waveLengthX2 = 50;
+			float waveLengthX1 = 1;
+			float waveLengthX2 = 1;
 						    	   
 			float waveLengthY1 = 1;
 			float waveLengthY2 = 1;
@@ -277,12 +277,12 @@
 			float3 xVector = worldPos + float3(0.05, 0, 0);
 			float3 zVector = worldPos + float3(0, 0, 0.05);
 
-			// Any effects.
-			
-			//_MainWave_Direction = _WindDirection;
-			//float3 worldPosMain = gerstnerWave(worldPos.xyz, _MainWave_Length, _MainWave_Amplitude, _MainWave_Speed, _MainWave_Direction, _MainWave_Steepness);
-			//float3 xVectorMain  = gerstnerWave(xVector, _MainWave_Length, _MainWave_Amplitude, _MainWave_Speed, _MainWave_Direction, _MainWave_Steepness);
-			//float3 zVectorMain  = gerstnerWave(zVector, _MainWave_Length, _MainWave_Amplitude, _MainWave_Speed, _MainWave_Direction, _MainWave_Steepness);
+			// Standard Waves
+			float littleWaveMain = 0.1 * sin(_Time.y + worldPos.x * 10) ;
+			float littleWavexVec = 0.1 * sin(_Time.y + xVector.x  * 10) ;
+			float littleWavezVec = 0.1 * sin(_Time.y + zVector.x  * 10); 
+
+
 
 			// New Genster Wave
 			float3 worldPosMain = gerstnerWave2(worldPos.xyz, _MainWave_Length, _MainWave_Amplitude, _MainWave_Speed, _MainWave_Direction, _MainWave_Steepness);
@@ -297,9 +297,9 @@
 
 
 			// Anything done to the worldPos vertice has to be done to the friend vectors.
-			worldPos.xyz += worldPosMain; //+ worldPosSecondary;
-			xVector      += xVectorMain ; //+ xVectorSecondary ;
-			zVector      += zVectorMain ; //+ zVectorSecondary ;
+			worldPos.xyz += worldPosMain + littleWaveMain; //+ worldPosSecondary;
+			xVector += xVectorMain  + littleWavexVec; //+ xVectorSecondary ;
+			zVector += zVectorMain  + littleWavezVec; //+ zVectorSecondary ;
 										 
 
 			v.normal = recalculateNormals(worldPos, xVector, zVector);
