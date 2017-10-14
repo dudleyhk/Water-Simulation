@@ -165,12 +165,12 @@
 		float3 gerstnerWave2(float3 worldPos, float _WaveLength, float _Amplitude, float3 _WaveSpeed, float3 _WaveDirection, float _WaveSteepness)
 		{
 
-			_CurrentVertexPos = worldPos;
-			float magnitude = (2 * 3.1416) / _WaveLength;
-			float3 windDirection = _WaveDirection;
-			float oceanDepth = 10;
-			float freq =  sqrt(9.8 * magnitude); // sqrt(9.8 * magnitude) * tanh(magnitude * oceanDepth);// 9.8 gravitational pull, deep water sim
-			float phase = (2 * _WaveSpeed) / _WaveLength;
+			// _CurrentVertexPos = worldPos;
+			// float magnitude = (2 * 3.1416) / _WaveLength;
+			// float3 windDirection = _WaveDirection;
+			// float oceanDepth = 10;
+			// float freq =  sqrt(9.8 * magnitude); // sqrt(9.8 * magnitude) * tanh(magnitude * oceanDepth);// 9.8 gravitational pull, deep water sim
+			// float phase = (2 * _WaveSpeed) / _WaveLength;
 
 
 			float3 windDirection1 = float3(1, 0, 0);
