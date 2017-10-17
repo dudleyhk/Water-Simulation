@@ -39,7 +39,7 @@
 		// -------------------------------------------------------------------
 
 		// HLSL Predefined variables.
-		sampler2D _MainTex;
+	sampler2D _MainTex;
 	half _Glossiness;
 	half _Metallic;
 	fixed4 _Color;
@@ -208,5 +208,5 @@
 	}
 	ENDCG
 	}
-		FallBack "Diffuse"
+	FallBack "Diffuse"
 }
