@@ -5,49 +5,28 @@
 		// Predefined properties.
 		_Color("Color", Color) = (1,1,1,1)
 		_MainTex("Texture", 2D) = "white" {}
-	    _Glossiness("Smoothness", Range(0,1)) = 0.5
+	_Glossiness("Smoothness", Range(0,1)) = 0.5
 		_Metallic("Metallic", Range(0,1)) = 0.0
 		_Transparency("Opacity", Range(0, 1)) = 1.0
 
-		// Gerstners Properties
-		_WindSpeed("Wind Speed", Range(0.1, 5)) = 1
-		_WindDirection("Wind Direction", Vector) = (0, 0, 0)
 
+		/* WAVE ATTRIBUTES */
+		_Gravity("Gravity", Float) = 9.8
+		_Wave_Length("Wave Length", Vector) = (0.75, 0.25, 0.75)
+		_Wave_Amplitude("Wave Height", Vector) = (0.1, 0.5, 0.1)
+		_Wave_Direction("Wave Direction", Vector) = (0.1, 0, 0.5)
 
-		// Main Wave
-		[HideInInspector] _MainWave_Length("Main Wave Length", Float) = 1
-		[HideInInspector] _MainWave_Amplitude("Main Wave Amplitude", Float) = 1
-		[HideInInspector] _MainWave_Speed("Main Wave Speed", Float) = 1
-		[HideInInspector] _MainWave_Steepness("Main Wave Steepness", Float) = 1
-		[HideInInspector] _MainWave_Direction("Main Wave Direction", Vector) = (0, 0, 0)
-
-		// Secondary Waves - smaller gerstner wave which roll in a different direction.
-		[HideInInspector] _SecondaryWave_Length("Secondary Wave Length", Float) = 1
-		[HideInInspector] _SecondaryWave_Amplitude("Secondary Wave Amplitude", Float) = 1
-		[HideInInspector] _SecondaryWave_Speed("Secondary Wave Speed", Float) = 1
-		[HideInInspector] _SecondaryWave_Steepness("Secondary Wave Steepness", Float) = 1
-		[HideInInspector] _SecondaryWave_Direction("Secondary Wave Direction", Vector) = (0, 0, 0)
-
-		// Other secondary Waves - smaller gerstner wave which roll in a different direction.
-		[HideInInspector] _SecondaryWave_Length("Secondary Wave Length", Float) = 1
-		[HideInInspector] _SecondaryWave_Amplitude("Secondary Wave Amplitude", Float) = 1
-		[HideInInspector] _SecondaryWave_Speed("Secondary Wave Speed", Float) = 1
-		[HideInInspector] _SecondaryWave_Steepness("Secondary Wave Steepness", Float) = 1
-		[HideInInspector] _SecondaryWave_Direction("Secondary Wave Direction", Vector) = (0, 0, 0)
-
-		// Wave Intensifier - high frequency waves.
-		[HideInInspector] _WaveIntensifier_Length("Wave Intensifier Length", Float) = 1
-		[HideInInspector] _WaveIntensifier_Amplitude("Wave Intensifier Amplitude", Float) = 1
-		[HideInInspector] _WaveIntensifier_Speed("Wave Intensifier Speed", Float) = 1
-		[HideInInspector] _WaveIntensifier_Steepness("Wave Intensifier Steepness", Float) = 1
-		[HideInInspector] _WaveIntensifier_Direction("Wave Intensifier Direction", Vector) = (0, 0, 0)
+		/* WIND WAVE ATTRIBUTES */
+		_WindWave_Length("Wind Wave Length", Float) = 0.1
+		_WindWave_Amplitude("Wind Wave Amplitude", Float) = 0.5
+		_WindWave_Speed("Wind Wave Speed", Float) = 0.85
+		_WindWave_Steepness("Wind Wave Steepness", Float) = 2
+		_WindWave_Direction("Wind Wave Direction", Vector) = (0, 0, 0)
 	}
 
 
 		SubShader
 	{
-		// TODO: Create a different Pass for the ripple code.
-
 		// TODO: Implement opacity code.
 		Tags { "RenderType" = "Opaque" }
 		LOD 200
@@ -66,40 +45,20 @@
 	fixed4 _Color;
 
 
-	// User Influencer
-	float _WindSpeed;
-	float3 _WindDirection;
 
-	float3 _CurrentVertexPos;
-	float3  _GerstnerWave;
+	// Water Waves
+	float _Gravity;
+	float3 _Wave_Length;
+	float3 _Wave_Amplitude;
+	float3 _Wave_Direction;
 
-	// Main Wave
-	float  _MainWave_Length = 0;
-	float  _MainWave_Amplitude = 0;
-	float  _MainWave_Speed = 0;
-	float  _MainWave_Steepness = 0;
-	float3 _MainWave_Direction;
 
-	// Secondary Waves				
-	float   _SecondaryWave_Length = 0;
-	float   _SecondaryWave_Amplitude = 0;
-	float   _SecondaryWave_Speed = 0;
-	float   _SecondaryWave_Steepness = 0;
-	float3  _SecondaryWave_Direction;
-
-	// Secondary Waves				
-	float   _OtherSecondaryWave_Length = 0;
-	float   _OtherSecondaryWave_Amplitude = 0;
-	float   _OtherSecondaryWave_Speed = 0;
-	float   _OtherSecondaryWave_Steepness = 0;
-	float3  _OtherSecondaryWave_Direction;
-
-	// Wave Intensifiers			
-	float _WaveIntensifier_Length = 0;
-	float _WaveIntensifier_Amplitude = 0;
-	float _WaveIntensifier_Speed = 0;
-	float _WaveIntensifier_Steepness = 0;
-	float3 _WaveIntensifier_Direction;
+	// Wind Wave
+	float  _WindWave_Length;
+	float  _WindWave_Amplitude;
+	float  _WindWave_Speed;
+	float  _WindWave_Steepness;
+	float3 _WindWave_Direction;
 
 
 
@@ -114,7 +73,7 @@
 
 	// TODO: Implement Ripple code. 
 	// ----------------------- SHADER ------------------------- \\
-			
+					
 
 /*Move the object from current space into world space, calculate the normals and change back. */
 	float3 recalculateNormals(float3 worldPos, float3 xVector, float3 zVector)
@@ -128,63 +87,45 @@
 	}
 
 
-
-	float3 gerstnerWave(float3 worldPos, float _WaveLength, float _Amplitude, float3 _WaveSpeed, float3 _WaveDirection, float _WaveSteepness)
+	float3 blowWind(float3 worldPos)
 	{
-		_Amplitude     = _WindSpeed / 2;
-		_WaveSteepness = _WindSpeed / 8;
-		_WaveSpeed     = _WindSpeed / 2;
-		_WaveLength    = (_WindSpeed - 12) / -2;
-
-
 		// w
-		float freq = 2 / _WaveLength;
+		float freq = 2 / _WindWave_Length;
 
 		// alpha
-		float phase = (2 * _WaveSpeed) / _WaveLength;
+		float phase = (2 * _WindWave_Speed) / _WindWave_Length;
 
 		// Q
-		float pinch = _WaveSteepness / (freq * _Amplitude);
+		float pinch = _WindWave_Steepness / (freq *  _WindWave_Amplitude);
 
 		// D
-		float dir = dot(worldPos.xz, _WaveDirection.xz);
+		float dir = dot(worldPos.xz, _WindWave_Direction.xz);
 
-		float X = worldPos.x + (pinch * _Amplitude) * (_WaveDirection.x * cos(freq * dir + phase * _Time.y));
-		float Y = _Amplitude * sin(freq * dir + phase * _Time.y);
-		float Z = worldPos.z + (pinch * _Amplitude) * (_WaveDirection.z * cos(freq * dir + phase * _Time.y));
+		float X = worldPos.x + (pinch *  _WindWave_Amplitude) * (_WindWave_Direction.x * cos(freq * dir + phase * _Time.w));
+		float Y = _WindWave_Amplitude * sin(freq * dir + phase * _Time.y);
+		float Z = worldPos.z + (pinch *  _WindWave_Amplitude) * (_WindWave_Direction.z * cos(freq * dir + phase * _Time.w));
 
 
 		return float3(X, Y, Z);
 	}
 
 
-
-	float3 gerstnerWave2(float3 worldPos)
+	float3 generateWater(float3 worldPos)
 	{
-
-		float3 windDirection1 = float3(1, 0, 0);
-		float3 windDirection2 = float3(0, 0, 0.5);
-
+		float3 windDirection1 = _Wave_Direction;
+		float3 windDirection2 = float3(1, 0, 0.25);
 
 		/* Amplitudes */
-		float amplitudeX1 = 1;
-		float amplitudeY1 = 1;
-		float amplitudeZ1 = 1;
-
-		float amplitudeX2 = 1;
-		float amplitudeY2 = 1;
-		float amplitudeZ2 = 1;
+		float amplitudeX1 = _Wave_Amplitude.x;
+		float amplitudeY1 = _Wave_Amplitude.y;
+		float amplitudeZ1 = _Wave_Amplitude.z;
 		// ----------------------
 
 
 		/* Wave Length */
-		float waveLengthX1 = 1;
-		float waveLengthY1 = 1;
-		float waveLengthZ1 = 1;
-
-		float waveLengthX2 = 1;
-		float waveLengthY2 = 1;
-		float waveLengthZ2 = 1;
+		float waveLengthX1 = _Wave_Length.x;
+		float waveLengthY1 = _Wave_Length.y;
+		float waveLengthZ1 = _Wave_Length.z;
 		// ----------------------
 
 
@@ -192,10 +133,6 @@
 		float magnitudeX1 = (2 * 3.1416) / waveLengthX1;
 		float magnitudeY1 = (2 * 3.1416) / waveLengthY1;
 		float magnitudeZ1 = (2 * 3.1416) / waveLengthZ1;
-
-		float magnitudeX2 = (2 * 3.1416) / waveLengthX2;
-		float magnitudeY2 = (2 * 3.1416) / waveLengthY2;
-		float magnitudeZ2 = (2 * 3.1416) / waveLengthZ2;
 		// ----------------------
 
 
@@ -204,82 +141,52 @@
 		float freqX1 = sqrt(9.8 * magnitudeX1);
 		float freqY1 = sqrt(9.8 * magnitudeY1);
 		float freqZ1 = sqrt(9.8 * magnitudeZ1);
-
-		float freqX2 = sqrt(9.8 * magnitudeX2);
-		float freqY2 = sqrt(9.8 * magnitudeY2);
-		float freqZ2 = sqrt(9.8 * magnitudeZ2);
 		// ----------------------
 
 
 		/* Gerstner Calculations */
-		float waveX1 = (windDirection1 / magnitudeX1) * amplitudeX1 * sin(dot(windDirection1, worldPos.x) - (freqX1 * _Time.y));
+		float waveX1 = (windDirection1 / magnitudeX1) * amplitudeX1 * sin(dot(windDirection1, worldPos.x) - (freqX1 * _Time.x));
 		float waveY1 = amplitudeY1 * cos(dot(windDirection1.xz, worldPos.xz) - (freqY1 - _Time.y));
-		float waveZ1 = (windDirection1 / magnitudeZ1) * amplitudeZ1 * sin(dot(windDirection1, worldPos.z) - (freqZ1 * _Time.y));
-
-
-		float waveX2 = (windDirection2 / magnitudeX2) * amplitudeX2 * sin(dot(windDirection2, worldPos.x) - (freqX2 * _Time.y));
-		float waveY2 = amplitudeY2 * cos(dot(windDirection2.xz, worldPos.xz) - (freqY2 - _Time.y));
-		float waveZ2 = (windDirection2 / magnitudeZ2) * amplitudeZ2 * sin(dot(windDirection2, worldPos.z) - (freqZ2 * _Time.y));
+		float waveZ1 = (windDirection1 / magnitudeZ1) * amplitudeZ1 * sin(dot(windDirection1, worldPos.z) - (freqZ1 * _Time.x));
 		// ----------------------
 
 
 		/* Totals */
-		float totalX = waveX1 * waveX2;
-		float totalY = waveY1 * waveY2;
-		float totalZ = waveZ1 * waveZ2;
+		float totalX = waveX1;
+		float totalY = waveY1 * (blowWind(worldPos));
+		float totalZ = waveZ1;
 		// ----------------------
 
-		/* Set values */
+							  /* Set values */
 		float X = worldPos.x - totalX;
 		float Y = totalY;
 		float Z = worldPos.z - totalZ;
 		// ----------------------
 
-
-
-		// (windDirection / magnitude) * _Amplitude * sin(dot(windDirection, worldPos.x) - (freq * _Time.x) + phase);
-		// _Amplitude * cos(dot(windDirection.xz, worldPos.xz) - (freq - _Time.y) + phase);
-		// (windDirection / magnitude) * _Amplitude * sin(dot(windDirection, worldPos.z) - (freq * _Time.x) + phase);
-
-
 		return float3(X, Y, Z);
 	}
 
 
-
-
+	// vertex shader.
 	void vert(inout appdata_full v, out Input o)
 	{
 		UNITY_INITIALIZE_OUTPUT(Input, o);
 
 		float4 worldPos = mul(unity_ObjectToWorld, v.vertex);
 
-
 		float3 xVector = worldPos + float3(0.05, 0, 0);
 		float3 zVector = worldPos + float3(0, 0, 0.05);
 
 
-		// Standard Waves
-		//float littleWaveMain = 0.1 * sin(_Time.y - worldPos.x  * 5);
-		//float littleWavexVec = 0.1 * sin(_Time.y - xVector.x *  5);
-		//float littleWavezVec = 0.1 * sin(_Time.y - zVector.x *  5);
-	   
 		// New Genster Wave
-		float3 worldPosMain2 = gerstnerWave2(worldPos.xyz);
-		float3  xVectorMain2 = gerstnerWave2(xVector);
-		float3  zVectorMain2 = gerstnerWave2(zVector);
-		
-
-		//_MainWave_Direction = _WindDirection;
-		//float3 worldPosMain = gerstnerWave(worldPos.xyz, _MainWave_Length, _MainWave_Amplitude  * 0.5f, _MainWave_Speed, _MainWave_Direction, _MainWave_Steepness);
-		//float3 xVectorMain  = gerstnerWave(xVector,      _MainWave_Length, _MainWave_Amplitude  * 0.5f, _MainWave_Speed, _MainWave_Direction, _MainWave_Steepness);
-		//float3 zVectorMain  = gerstnerWave(zVector,      _MainWave_Length, _MainWave_Amplitude  * 0.5f, _MainWave_Speed, _MainWave_Direction, _MainWave_Steepness);
+		float3 worldPosFinalWater = generateWater(worldPos.xyz);
+		float3  xVectorFinalWater = generateWater(xVector);
+		float3  zVectorFinalWater = generateWater(zVector);
 
 
-		// Anything done to the worldPos vertice has to be done to the friend vectors.
-		worldPos.xyz += /*worldPosMain      * */ worldPosMain2;                              //+ littleWaveMain;
-		xVector +=      /*xVectorMain       * */ xVectorMain2;                              //+ littleWavexVec; 
-		zVector +=      /*zVectorMain       * */ xVectorMain2;                              //+ littleWavezVec; 
+		worldPos.xyz += worldPosFinalWater;
+		xVector += xVectorFinalWater;
+		zVector += zVectorFinalWater;
 
 
 		v.normal = recalculateNormals(worldPos, xVector, zVector);
@@ -303,7 +210,3 @@
 	}
 		FallBack "Diffuse"
 }
-
-
-
-
