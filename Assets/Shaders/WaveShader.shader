@@ -113,7 +113,6 @@
 		   float3 generateWater(float3 worldPos)
 		   {
 			   float3 windDirection1 = _Wave_Direction;
-			   float3 windDirection2 = float3(1, 0, 0.25);
 
 			   /* Amplitudes */
 			   float amplitudeX1 = _Wave_Amplitude.x;

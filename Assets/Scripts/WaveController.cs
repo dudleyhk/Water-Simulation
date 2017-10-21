@@ -19,6 +19,10 @@ public class WaveController : MonoBehaviour
     public float windWaveSteepness;
     public Vector3 windWaveDirection;
 
+    private void Start()
+    {
+        waterMeshFilter.mesh.MarkDynamic();
+    }
 
     private void Update()
     {
