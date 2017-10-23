@@ -96,21 +96,13 @@ public class WaveController : MonoBehaviour
         float waveY1 = amplitudeY1 * Mathf.Cos(Vector2.Dot(windDirection, vertexDirection) - (freqY1 - Time.time));
         float waveZ1 = ((windDirection1 / magnitudeZ1) * amplitudeZ1 * Mathf.Sin(Vector2.Dot(windDirection, vertexDirection) - (freqZ1 * (Time.time)))).x;
         // ----------------------
-
-       //print("WaveX: " + waveX1);
-       //print("WaveY: " + waveY1);
-       //print("WaveZ: " + waveZ1);
-
-
+        
         /* Set values */
         float X = vertex.x - waveX1;
         float Y = waveY1 * BlowWind(vertex).x;
         float Z = vertex.z - waveZ1;
         // ----------------------
 
-
-        //Vector3 vertexLocalSpace = transform.InverseTransformDirection(new Vector3(X, Y, Z));
-        //print("Position of vertex in question " + new Vector3(X, Y, Z));
         return new Vector3(X, Y, Z);
     }
 

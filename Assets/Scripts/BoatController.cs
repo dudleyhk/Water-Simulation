@@ -10,6 +10,7 @@ public class BoatController : MonoBehaviour
     public WaveController waveController;
     public float waterDensity = 1027f;
     public float distanceToWaterSurface;
+    private float speed = 500f;
     public Vector3 currentWaveVertexPosition;
     private float boatHeight       ;
     private float waveHeight       ;
@@ -24,14 +25,12 @@ public class BoatController : MonoBehaviour
         boatHeight = this.transform.position.y;
         waveHeight = currentWaveVertexPosition.y;
 
-        distanceToWaterSurface = Vector3.Distance(this.transform.position, currentWaveVertexPosition);
+        //distanceToWaterSurface = Vector3.Distance(this.transform.position, currentWaveVertexPosition);
 
         BasicFloating();
-       if (waveHeight < boatHeight)
+        if (waveHeight < boatHeight)
         {
-            
             Debug.DrawLine(this.transform.position, currentWaveVertexPosition, Color.red);
-
         }
         else
         {
@@ -39,19 +38,15 @@ public class BoatController : MonoBehaviour
             // Let gravity do its bit.
         }
 
-
-        if(distanceToWaterSurface < 1 && distanceToWaterSurface > -1)
-        {
-            distanceToWaterSurface = 0f;
-        }
-
-
-        
+        //if (distanceToWaterSurface < 1 && distanceToWaterSurface > -1)
+        //{
+        //    distanceToWaterSurface = 0f;
+        // }
     }
     
     private void BasicFloating()
     {
-        boatHeight = Mathf.MoveTowards(boatHeight, waveHeight, 500f * Time.deltaTime);
+        boatHeight = Mathf.MoveTowards(boatHeight, waveHeight, speed * Time.deltaTime);
         transform.position = new Vector3(transform.position.x, boatHeight, transform.position.z);
     }
 
@@ -61,6 +56,7 @@ public class BoatController : MonoBehaviour
         Bounds boatBounds = GetComponent<MeshFilter>().sharedMesh.bounds;
         float cubeFaceSurfaceArea = (boatBounds.size.x * boatBounds.size.z);
 
+        // hyrdodynamic equation  F = pVg
         Vector3 force = distanceToWaterSurface * Physics.gravity.y * cubeFaceSurfaceArea * Vector3.up;
         force.x = 0f;
         force.z = 0f;

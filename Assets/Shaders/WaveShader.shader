@@ -156,7 +156,7 @@
 			   float totalZ = waveZ1;
 			   // ----------------------
 
-									 /* Set values */
+			   /* Set values */
 			   float X = worldPos.x - totalX;
 			   float Y = totalY;
 			   float Z = worldPos.z - totalZ;
