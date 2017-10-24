@@ -15,9 +15,9 @@
 		_Wave_Length("Wave Length", Vector) = (0.75, 0.25, 0.75)
 		_Wave_Amplitude("Wave Height", Vector) = (0.1, 0.5, 0.1)
 		_Wave_Direction("Wave Direction", Vector) = (0.1, 0, 0.5)
+		_BoostWave_Direction("Boost Wave Direction", Vector) = (0, 0, 0)
 
 		   /* WIND WAVE ATTRIBUTES */
-		_WindWave_Scalar("Wind Wave Scalar", Float) = 3
 		_WindWave_Length("Wind Wave Length", Float) = 0.1
 		_WindWave_Amplitude("Wind Wave Amplitude", Float) = 0.5
 		_WindWave_Speed("Wind Wave Speed", Float) = 0.85
@@ -53,10 +53,10 @@
 		  float3 _Wave_Length;
 		  float3 _Wave_Amplitude;
 		  float3 _Wave_Direction;
+		  float3 _BoostWave_Direction;
 
 
 		  // Wind Wave
-		  float  _WindWave_Scalar;
 		  float  _WindWave_Length;
 		  float  _WindWave_Amplitude;
 		  float  _WindWave_Speed;
@@ -92,25 +92,19 @@
 		   }
 
 
-		   float3 blowWind(float3 worldPos)
+		   float blowWind(float3 worldPos) 
 		   {
 			   float freq = 2 / _WindWave_Length;
 			   float phase = (2 * _WindWave_Speed) / _WindWave_Length;
-			   float pinch = _WindWave_Steepness / (freq *  _WindWave_Amplitude);
-			   float dir = dot(worldPos.xz, _WindWave_Direction.xz);
+			   float pinch = _WindWave_Steepness  / (freq *  _WindWave_Amplitude);
+			   float dir = dot(_WindWave_Direction.xz, worldPos.xz);
 
-			   float windWaveTime = _WaterTime * _WindWave_Scalar;
-
-			   float X = worldPos.x + (pinch *  _WindWave_Amplitude) * (_WindWave_Direction.x * cos(freq * dir + phase * _Time.w));
-			   float Y = _WindWave_Amplitude * sin(freq * dir + phase * _Time.y);
-			   float Z = worldPos.z + (pinch *  _WindWave_Amplitude) * (_WindWave_Direction.z * cos(freq * dir + phase * _Time.w));
-
-
-			   return float3(X, Y, Z);
+			   float wave = (pinch * _WindWave_Amplitude) * cos((dir - (freq - _WaterTime)) * phase);
+			   return wave;
 		   }
 
 
-		   float3 generateWater(float3 worldPos)
+		   float3 generateWave(float3 worldPos)
 		   {
 			   float3 windDirection1 = _Wave_Direction;
 
@@ -129,30 +123,35 @@
 
 
 			   /* Magnitudes */
-			   float magnitudeX1 = (2 * 3.1416) / waveLengthX1;
-			   float magnitudeY1 = (2 * 3.1416) / waveLengthY1;
-			   float magnitudeZ1 = (2 * 3.1416) / waveLengthZ1;
+			   float magnitudeX1 = (2 * 3.14159274) / waveLengthX1;
+			   float magnitudeY1 = (2 * 3.14159274) / waveLengthY1;
+			   float magnitudeZ1 = (2 * 3.14159274) / waveLengthZ1;
 			   // ----------------------
 
 
-
 			   /* Frequencis */
-			   float freqX1 = sqrt(9.8 * magnitudeX1);
-			   float freqY1 = sqrt(9.8 * magnitudeY1);
-			   float freqZ1 = sqrt(9.8 * magnitudeZ1);
+			   float freqX1 = sqrt(_Gravity * magnitudeX1);
+			   float freqY1 = sqrt(_Gravity * magnitudeY1);
+			   float freqZ1 = sqrt(_Gravity * magnitudeZ1);
 			   // ----------------------
 
 
 			   /* Gerstner Calculations */
-			   float waveX1 = (windDirection1 / magnitudeX1) * amplitudeX1 * sin(dot(windDirection1.xz, worldPos.xz) - (freqX1 * _WaterTime));
+			   float waveX1 = ((windDirection1 / magnitudeX1) * amplitudeX1) * sin(dot(windDirection1.xz, worldPos.xz) - (freqX1 * _WaterTime));
 			   float waveY1 = amplitudeY1 * cos(dot(windDirection1.xz, worldPos.xz) - (freqY1 - _WaterTime));
-			   float waveZ1 = (windDirection1 / magnitudeZ1) * amplitudeZ1 * sin(dot(windDirection1.xz, worldPos.xz) - (freqZ1 * _WaterTime));
+			   float waveZ1 = ((windDirection1 / magnitudeZ1) * amplitudeZ1) * sin(dot(windDirection1.xz, worldPos.xz) - (freqZ1 * _WaterTime));
 			   // ----------------------
+
+
+			   float freq  = 2 / 1;
+			   float phase = (2 * 0.1) / 1;
+			   float pinch = 0.1 / (freq *  0.1);
+			   float boosterWave = 0.1 * cos((freq * dot(worldPos.xz, _BoostWave_Direction.xz)) + (phase * _WaterTime));
 
 
 			   /* Totals */
 			   float totalX = waveX1;
-			   float totalY = waveY1 * blowWind(worldPos).x;
+			   float totalY = (waveY1 * boosterWave) * blowWind(worldPos);
 			   float totalZ = waveZ1;
 			   // ----------------------
 
@@ -178,9 +177,9 @@
 
 
 			   // New Genster Wave
-			   float3 worldPosFinalWater = generateWater(worldPos.xyz);
-			   float3  xVectorFinalWater = generateWater(xVector);
-			   float3  zVectorFinalWater = generateWater(zVector);
+			   float3 worldPosFinalWater = generateWave(worldPos.xyz);
+			   float3  xVectorFinalWater = generateWave(xVector);
+			   float3  zVectorFinalWater = generateWave(zVector);
 
 
 			   worldPos.xyz += worldPosFinalWater;

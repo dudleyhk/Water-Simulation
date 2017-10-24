@@ -11,6 +11,7 @@ public class WaveController : MonoBehaviour
     public Vector3 waveDirection;
     public Vector3 waveAmplitude;
     public Vector3 waveLength;
+    public Vector3 boostWaveDirection;
 
     public float windWaveScalar;
     public float windWaveLength;
@@ -18,6 +19,10 @@ public class WaveController : MonoBehaviour
     public float windWaveSpeed;
     public float windWaveSteepness;
     public Vector3 windWaveDirection;
+
+    private Vector2 vertexDirection;
+
+
 
     private void Start()
     {
@@ -27,13 +32,13 @@ public class WaveController : MonoBehaviour
     private void Update()
     {
          
-        gravity       = waveMaterial.GetFloat("_Gravity");
-        waveDirection = waveMaterial.GetVector("_Wave_Direction");
-        waveAmplitude = waveMaterial.GetVector("_Wave_Amplitude");
-        waveLength    = waveMaterial.GetVector("_Wave_Length");
+        gravity            = waveMaterial.GetFloat("_Gravity");
+        waveDirection      = waveMaterial.GetVector("_Wave_Direction");
+        waveAmplitude      = waveMaterial.GetVector("_Wave_Amplitude");
+        waveLength         = waveMaterial.GetVector("_Wave_Length");
+        boostWaveDirection = waveMaterial.GetVector("_BoostWave_Direction");
+        
 
-
-        windWaveScalar    = waveMaterial.GetFloat("_WindWave_Scalar");
         windWaveLength    = waveMaterial.GetFloat("_WindWave_Length");
         windWaveAmplitude = waveMaterial.GetFloat("_WindWave_Amplitude");
         windWaveSpeed     = waveMaterial.GetFloat("_WindWave_Speed");
@@ -41,12 +46,6 @@ public class WaveController : MonoBehaviour
         windWaveDirection = waveMaterial.GetVector("_WindWave_Direction");
 
         waveMaterial.SetFloat("_WaterTime", Time.time);
-    }
-
-
-    private Vector3 BlowWind()
-    {
-        return Vector3.zero;
     }
 
 
@@ -88,18 +87,25 @@ public class WaveController : MonoBehaviour
         float freqZ1 = Mathf.Sqrt(gravity * magnitudeZ1);
         // ----------------------
 
-        var vertexDirection = new Vector2(vertex.x, vertex.z);
+        vertexDirection = new Vector2(vertex.x, vertex.z);
         var windDirection = new Vector2(windDirection1.x, windDirection1.z);
 
         /* Gerstner Calculations */
-        float waveX1 = ((windDirection1 / magnitudeX1) * amplitudeX1 * Mathf.Sin(Vector2.Dot(windDirection, vertexDirection) - (freqX1 * (Time.time)))).x;
+        float waveX1 = (((windDirection1 / magnitudeX1) * amplitudeX1) * Mathf.Sin(Vector2.Dot(windDirection, vertexDirection) - (freqX1 * (Time.time)))).x;
         float waveY1 = amplitudeY1 * Mathf.Cos(Vector2.Dot(windDirection, vertexDirection) - (freqY1 - Time.time));
-        float waveZ1 = ((windDirection1 / magnitudeZ1) * amplitudeZ1 * Mathf.Sin(Vector2.Dot(windDirection, vertexDirection) - (freqZ1 * (Time.time)))).x;
+        float waveZ1 = (((windDirection1 / magnitudeZ1) * amplitudeZ1) * Mathf.Sin(Vector2.Dot(windDirection, vertexDirection) - (freqZ1 * (Time.time)))).z;
         // ----------------------
-        
+
+
+        float freq = 2 / 1;
+        float phase = (2f * 0.1f) / 1f;
+        float pinch = 0.1f / (freq * 0.1f);
+        float boosterWave = 0.1f * Mathf.Cos((freq * Vector2.Dot(vertexDirection, new Vector2(boostWaveDirection.x, boostWaveDirection.z))) + (phase * Time.time));
+
+
         /* Set values */
         float X = vertex.x - waveX1;
-        float Y = waveY1 * BlowWind(vertex).x;
+        float Y = (waveY1 * boosterWave) * BlowWind(vertex);
         float Z = vertex.z - waveZ1;
         // ----------------------
 
@@ -107,22 +113,15 @@ public class WaveController : MonoBehaviour
     }
 
 
-    private Vector3 BlowWind(Vector3 vertex)
+    private float BlowWind(Vector3 vertex)
     {
-        float freq  = 2 / windWaveLength;
+        float freq = 2f / windWaveLength;
         float phase = (2 * windWaveSpeed) / windWaveLength;
         float pinch = windWaveSteepness / (freq * windWaveAmplitude);
+        float dir = Vector2.Dot(new Vector2(windWaveDirection.x, windWaveDirection.z), vertexDirection);
 
-        Vector2 vertexDirection = new Vector2(vertex.x, vertex.z);
-        Vector2 windDirection   = new Vector2(windWaveDirection.x, windWaveDirection.z);
-        float dir = Vector2.Dot(vertexDirection, windDirection);
-
-        float X = vertex.x + (pinch * windWaveAmplitude) * (windWaveDirection.x * Mathf.Cos(freq * dir + phase * (Time.time * windWaveScalar)));
-        float Y = windWaveAmplitude * Mathf.Sin(freq * dir + phase * Time.time * windWaveScalar);
-        float Z = vertex.z + (pinch * windWaveAmplitude) * (windWaveDirection.z * Mathf.Cos(freq * dir + phase * (Time.time * windWaveScalar)));
-
-
-        return new Vector3(X, Y, Z);
+        float wave = (pinch * windWaveAmplitude) * Mathf.Cos((dir - (freq - Time.time)) * phase);
+        return wave;
     }
 }
 

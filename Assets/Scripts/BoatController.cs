@@ -6,62 +6,62 @@ using UnityEngine;
 public class BoatController : MonoBehaviour
 {
     public Rigidbody boatRigidbody { get { return GetComponent<Rigidbody>(); } }
-     public List<GameObject> boyancyAids = new List<GameObject>();
     public WaveController waveController;
     public float waterDensity = 1027f;
-    public float distanceToWaterSurface;
-    private float speed = 500f;
+    public float depth;
     public Vector3 currentWaveVertexPosition;
-    private float boatHeight       ;
-    private float waveHeight       ;
+
+    private float boatHeight;
+    private float waveHeight;
 
 
+
+    private void FixedUpdate()
+    {
+        if (waveHeight > boatHeight)
+        {
+            ApplyBuoyancyForce();
+        }
+    }
 
 
     private void Update()
     {
         currentWaveVertexPosition = waveController.GetVertexPosition(transform.position);
+        depth = Vector3.Distance(this.transform.position, currentWaveVertexPosition);
+        DebugLines();
+    }
+    
 
+
+    private void DebugLines()
+    {
         boatHeight = this.transform.position.y;
         waveHeight = currentWaveVertexPosition.y;
 
-        //distanceToWaterSurface = Vector3.Distance(this.transform.position, currentWaveVertexPosition);
-
-        BasicFloating();
         if (waveHeight < boatHeight)
         {
             Debug.DrawLine(this.transform.position, currentWaveVertexPosition, Color.red);
+            depth = -depth;
         }
         else
         {
+            depth = Mathf.Abs(depth);
             Debug.DrawLine(this.transform.position, currentWaveVertexPosition, Color.yellow);
-            // Let gravity do its bit.
         }
-
-        //if (distanceToWaterSurface < 1 && distanceToWaterSurface > -1)
-        //{
-        //    distanceToWaterSurface = 0f;
-        // }
     }
     
-    private void BasicFloating()
+    private void ApplyBuoyancyForce()
     {
-        boatHeight = Mathf.MoveTowards(boatHeight, waveHeight, speed * Time.deltaTime);
-        transform.position = new Vector3(transform.position.x, boatHeight, transform.position.z);
-    }
+        if(float.IsNaN(depth)) return;
 
-    
-    private Vector3 BouyancyForce()
-    {
         Bounds boatBounds = GetComponent<MeshFilter>().sharedMesh.bounds;
         float cubeFaceSurfaceArea = (boatBounds.size.x * boatBounds.size.z);
 
-        // hyrdodynamic equation  F = pVg
-        Vector3 force = distanceToWaterSurface * Physics.gravity.y * cubeFaceSurfaceArea * Vector3.up;
-        force.x = 0f;
-        force.z = 0f;
+        float force = waterDensity * Mathf.Abs(Physics.gravity.y) * (cubeFaceSurfaceArea * 2f);
+        var buoyancyForce = (force * depth) * Time.deltaTime;
+        print("Buoyancy force: " + buoyancyForce);
 
-        return force;
-
+        boatRigidbody.AddForceAtPosition(new Vector3(0f, buoyancyForce, 0f), transform.position, ForceMode.Force);
     }
 }
