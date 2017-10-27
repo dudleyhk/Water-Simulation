@@ -1,51 +1,121 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.UI;
+
 
 public class WaveController : MonoBehaviour
 {
+    public Slider mainWavesHeightSlider;
+    public Slider mainWavesLengthSlider;
+    public Slider windWavesHeightSlider;
+    public Slider windWavesLengthSlider;
+    public Slider windWavesSpeedSlider; 
+    public Slider windWavesSteepnessSlider;
+
     public MeshFilter waterMeshFilter;
     public Material waveMaterial;
 
-    public float gravity;
+    public float   gravity;
     public Vector3 waveDirection;
     public Vector3 waveAmplitude;
     public Vector3 waveLength;
     public Vector3 boostWaveDirection;
 
-    public float windWaveScalar;
-    public float windWaveLength;
-    public float windWaveAmplitude;
-    public float windWaveSpeed;
-    public float windWaveSteepness;
+    public float   windWaveLength;
+    public float   windWaveAmplitude;
+    public float   windWaveSpeed;
+    public float   windWaveSteepness;
     public Vector3 windWaveDirection;
 
-    private Vector2 vertexDirection;
 
+
+    private readonly float defaultGravity              = 9.8f;
+    private readonly Vector3 defaultWaveLength         = new Vector3(0.01f, 1f, 0.01f);
+    private readonly Vector3 defaultWaveAmplitude      = new Vector3(0.1f, 10f, 0.1f);
+    private readonly Vector3 defaultWaveDirection      = new Vector3(0.1f, 0f, 0.5f);
+    private readonly Vector3 defaultBoostWaveDirection = new Vector3(0.9f, 0f, 0.5f);
+            
+    private readonly float defaultWindWaveLength      = 10f;
+    private readonly float defaultWindWaveAmplitude   = 5f;
+    private readonly float defaultWindWaveSpeed       = 5f;
+    private readonly float defaultWindWaveSteepness   = 0.25f;
+    private readonly Vector3 defaultWindWaveDirection = new Vector3(1f, 0f, 1f);
+
+    private Vector2 vertexDirection;
 
 
     private void Start()
     {
         waterMeshFilter.mesh.MarkDynamic();
+        ResetWaves();
     }
+
 
     private void Update()
     {
-         
-        gravity            = waveMaterial.GetFloat("_Gravity");
+        SetWaveValues();
+        GetWaveValues();
+    }
+
+
+    private void SetWaveValues()
+    {
+        waveLength.y      = mainWavesLengthSlider.value;
+        waveAmplitude.y   = mainWavesHeightSlider.value;
+        windWaveLength    = windWavesLengthSlider.value;
+        windWaveAmplitude = windWavesHeightSlider.value;
+        windWaveSpeed     = windWavesSpeedSlider.value;
+        windWaveSteepness = windWavesSteepnessSlider.value;
+
+        waveMaterial.SetFloat ("_WaterTime", Time.time);
+        waveMaterial.SetVector("_Wave_Amplitude",     waveAmplitude);
+        waveMaterial.SetVector("_Wave_Length",        waveLength);
+        waveMaterial.SetFloat ("_WindWave_Length",    windWaveLength);
+        waveMaterial.SetFloat ("_WindWave_Amplitude", windWaveAmplitude);
+        waveMaterial.SetFloat ("_WindWave_Speed",     windWaveSpeed);
+        waveMaterial.SetFloat ("_WindWave_Steepness", windWaveSteepness);
+    }
+
+
+    private void GetWaveValues()
+    {
+        gravity            = waveMaterial.GetFloat ("_Gravity");
         waveDirection      = waveMaterial.GetVector("_Wave_Direction");
         waveAmplitude      = waveMaterial.GetVector("_Wave_Amplitude");
         waveLength         = waveMaterial.GetVector("_Wave_Length");
         boostWaveDirection = waveMaterial.GetVector("_BoostWave_Direction");
-        
 
-        windWaveLength    = waveMaterial.GetFloat("_WindWave_Length");
-        windWaveAmplitude = waveMaterial.GetFloat("_WindWave_Amplitude");
-        windWaveSpeed     = waveMaterial.GetFloat("_WindWave_Speed");
-        windWaveSteepness = waveMaterial.GetFloat("_WindWave_Steepness");
-        windWaveDirection = waveMaterial.GetVector("_WindWave_Direction");
+        windWaveLength     = waveMaterial.GetFloat ("_WindWave_Length");
+        windWaveAmplitude  = waveMaterial.GetFloat ("_WindWave_Amplitude");
+        windWaveSpeed      = waveMaterial.GetFloat ("_WindWave_Speed");
+        windWaveSteepness  = waveMaterial.GetFloat ("_WindWave_Steepness");
+        windWaveDirection  = waveMaterial.GetVector("_WindWave_Direction");
+    }
 
-        waveMaterial.SetFloat("_WaterTime", Time.time);
+
+
+    public void ResetWaves()
+    {
+        gravity            = defaultGravity;
+        waveDirection      = defaultWaveDirection; 
+        waveAmplitude      = defaultWaveAmplitude;
+        waveLength         = defaultWaveLength; 
+        boostWaveDirection = defaultBoostWaveDirection;
+
+        windWaveLength     = defaultWindWaveLength;
+        windWaveAmplitude  = defaultWindWaveAmplitude;
+        windWaveSpeed      = defaultWindWaveSpeed;
+        windWaveSteepness  = defaultWindWaveSteepness;
+        windWaveDirection  = defaultWindWaveDirection;
+
+
+        mainWavesLengthSlider.value = waveLength.y;
+        mainWavesHeightSlider.value = waveAmplitude.y;
+        windWavesLengthSlider.value = windWaveLength;
+        windWavesHeightSlider.value = windWaveAmplitude;
+        windWavesSpeedSlider.value  = windWaveSpeed;
+        windWavesSteepnessSlider.value = windWaveSteepness;
     }
 
 

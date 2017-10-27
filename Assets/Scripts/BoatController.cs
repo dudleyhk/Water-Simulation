@@ -60,7 +60,6 @@ public class BoatController : MonoBehaviour
 
         float force = waterDensity * Mathf.Abs(Physics.gravity.y) * (cubeFaceSurfaceArea * 2f);
         var buoyancyForce = (force * depth) * Time.deltaTime;
-        print("Buoyancy force: " + buoyancyForce);
 
         boatRigidbody.AddForceAtPosition(new Vector3(0f, buoyancyForce, 0f), transform.position, ForceMode.Force);
     }
