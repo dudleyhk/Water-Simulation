@@ -68,13 +68,18 @@ public class WaveController : MonoBehaviour
         windWaveSpeed     = windWavesSpeedSlider.value;
         windWaveSteepness = windWavesSteepnessSlider.value;
 
+        
         waveMaterial.SetFloat ("_WaterTime", Time.time);
-        waveMaterial.SetVector("_Wave_Amplitude",     waveAmplitude);
-        waveMaterial.SetVector("_Wave_Length",        waveLength);
+        waveMaterial.SetFloat ("_Gravity",             gravity);
+        waveMaterial.SetVector("_Wave_Direction",      waveDirection);
+        waveMaterial.SetVector("_BoostWave_Direction", boostWaveDirection);
+        waveMaterial.SetVector("_Wave_Amplitude",      waveAmplitude);
+        waveMaterial.SetVector("_Wave_Length",         waveLength);
         waveMaterial.SetFloat ("_WindWave_Length",    windWaveLength);
         waveMaterial.SetFloat ("_WindWave_Amplitude", windWaveAmplitude);
         waveMaterial.SetFloat ("_WindWave_Speed",     windWaveSpeed);
         waveMaterial.SetFloat ("_WindWave_Steepness", windWaveSteepness);
+        waveMaterial.SetVector("_WindWave_Direction", windWaveDirection);
     }
 
 
