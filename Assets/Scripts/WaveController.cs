@@ -71,10 +71,10 @@ public class WaveController : MonoBehaviour
         
         waveMaterial.SetFloat ("_WaterTime", Time.time);
         waveMaterial.SetFloat ("_Gravity",             gravity);
-        waveMaterial.SetVector("_Wave_Direction",      waveDirection);
-        waveMaterial.SetVector("_BoostWave_Direction", boostWaveDirection);
         waveMaterial.SetVector("_Wave_Amplitude",      waveAmplitude);
         waveMaterial.SetVector("_Wave_Length",         waveLength);
+        waveMaterial.SetVector("_Wave_Direction",      waveDirection);
+        waveMaterial.SetVector("_BoostWave_Direction", boostWaveDirection);
         waveMaterial.SetFloat ("_WindWave_Length",    windWaveLength);
         waveMaterial.SetFloat ("_WindWave_Amplitude", windWaveAmplitude);
         waveMaterial.SetFloat ("_WindWave_Speed",     windWaveSpeed);
