@@ -73,9 +73,6 @@
 			  float2 uv_MainTex;
 		  };
 
-
-
-
 		  // TODO: Implement Ripple code. 
 		  // ----------------------- SHADER ------------------------- \\
 		  					
