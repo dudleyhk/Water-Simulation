@@ -1,4 +1,4 @@
-# Particle Swarm Optimisation - Research Project
+# Water Simulation - Research Project
 
 [YouTube - Video](https://youtu.be/Pjroz9lZNro)
 
