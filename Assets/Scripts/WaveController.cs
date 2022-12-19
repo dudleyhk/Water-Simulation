@@ -4,18 +4,110 @@ using UnityEngine;
 using UnityEngine.UI;
 
 
+
+
+/// <summary>
+/// TODO:
+/// - In general most variables are publicly accessiable where they could be 
+///     private, avoiding access to data that should not be modified. The 
+///     WaveController class is multi-purpose in it's present state and thus 
+///     does not adhere to SOLID principles - it's verbose, hard to scale 
+///     and doesn't give any indication of how it should be used. In order to 
+///     fixe these issues the following software design is preposed.
+/// 
+/// - Break this class into multiple meaningful classes will decouple 
+///     the generation, UI and data associated with the simulation. The new 
+///     data strcutures/ classes include; WaveController, WaveControllerImpl, 
+///     WaveControllerUI, IWaveControllerUIDelegates, OceanGenerator, Ocean, 
+///     OceanDefaultValues and WaveControllerData.
+/// 
+/// - Overview: 
+///     - struct OceanDefaultValues
+///         * Move the default value definition out of the WaveController.
+///         
+///     - class WaveControllerData (ScriptableObject)
+///         * Has DefaultOceanValues struct and a Wave Material reference.
+///     
+///     - class OceanData (ScriptableObject)
+///         * The Ocean class updates the information in here.
+///         
+///     - class Ocean (Native)
+///         * Constructor takes OceanDefaultValues, OceanData and WaveMaterial as params.
+///         * Updates/ set OceanData variables.
+///         * Set local OceanDefaultValues to the same as what is in the 
+///             WaveControllerData.
+///         * Change GetVertexPosition name to EstimateVertexPosition and move 
+///             into Ocean class (Additional discussion on this in BoatController).
+///         * Define public System.Action events and assign private functions 
+///             to them so they're called on their invokation by UIDelegates 
+///             (more detail in WaveControllerImpl):
+///                 + OnChangeGravity
+///                 + OnChangeWaveAmplitude
+///         * IE: 
+///             public Action OnChangeGravity = new Action(ChangeGravity);
+///             private float grav;
+///             
+///             private void ChangeGravity(float val) 
+///             { 
+///             	grav = val;
+///             }
+/// 
+///     - static class OceanGenerator (Native)
+///         * Could add custom Ocean Mesh/ Grid generation here and add setup 
+///             data to the WaveControllerData.
+///         * Function 'CreateOcean' takes OceanDefaultValues and a WaveMaterial
+///             and returns an Ocean Object.
+///         
+///     - interface IWaveControllerUIDelegates
+///         * Contains callbacks for Sliders OnSliderChanged events and On 
+///             Default Waves/ Reset Button Click.
+///             
+///     - class WaveControllerUI (MonoBehaviour, IWaveControllerUIDelegates)
+///         * Reference to UI Components.
+///         
+///     - class WaveController (MonoBehaviour)
+///         * Strip out logic and put into an internal class WaveControllerImpl.
+///         * Add private SerializedField reference to WaveControllerUI and 
+///             Ocean Mesh.
+///         * Instatiate new WaveControllerImpl.
+///         * References for WaveControllerData and OceanData.
+///             
+///     - internal class WaveControllerImpl (Native)
+///         * Cconstructor takes IWaveControllerUIDelegates and WaveControllerData
+///         * Call OceanGenerator.CreateOcean passing OceanDefaultValues and 
+///             WaveMaterial as params and returns an Ocean object.
+///         * Assign events to the Ocean object that are fired by the 
+///             WaveControllerUI class.
+///         * IE: 
+///             IWaveControllerUIDelegates.OnGravitySliderChanaged += () =>
+///             {
+///                 ocean.OnChangeGravity?.Invoke();
+///             }
+///
+/// 
+/// </summary>
 public class WaveController : MonoBehaviour
 {
+    // TODO: Move these into WaveControllerUI
+    #region WaveControllerUI
     public Slider mainWavesHeightSlider;
     public Slider mainWavesLengthSlider;
     public Slider windWavesHeightSlider;
     public Slider windWavesLengthSlider;
     public Slider windWavesSpeedSlider; 
     public Slider windWavesSteepnessSlider;
+    #endregion
 
+    // TODO: One of the only variables that stays in the WaveController class
     public MeshFilter waterMeshFilter;
-    public Material waveMaterial;
 
+    // TODO: Move to WaveControllerData
+    #region WaveControllerData
+    public Material waveMaterial;
+    #endregion
+
+    // TODO: Move to Ocean Data Class
+    #region OceanData
     public float   gravity;
     public Vector3 waveDirection;
     public Vector3 waveAmplitude;
@@ -27,9 +119,11 @@ public class WaveController : MonoBehaviour
     public float   windWaveSpeed;
     public float   windWaveSteepness;
     public Vector3 windWaveDirection;
+    private Vector2 vertexDirection;
+    #endregion
 
-
-
+    // TODO: Move these into OceanDefaultValues struct and edit in WaveControllerData
+    #region OceanDefaultValues
     private readonly float defaultGravity              = 9.8f;
     private readonly Vector3 defaultWaveLength         = new Vector3(0.01f, 1f, 0.01f);
     private readonly Vector3 defaultWaveAmplitude      = new Vector3(0.1f, 10f, 0.1f);
@@ -41,16 +135,21 @@ public class WaveController : MonoBehaviour
     private readonly float defaultWindWaveSpeed       = 5f;
     private readonly float defaultWindWaveSteepness   = 0.25f;
     private readonly Vector3 defaultWindWaveDirection = new Vector3(1f, 0f, 1f);
+    #endregion
 
-    private Vector2 vertexDirection;
+
+
+
+
 
 
     private void Start()
     {
         waterMeshFilter.mesh.MarkDynamic();
+
+        // TODO: Move to Ocean
         ResetWaves();
     }
-
 
     private void Update()
     {
@@ -59,6 +158,7 @@ public class WaveController : MonoBehaviour
     }
 
 
+    // TODO: Move to Ocean
     private void SetWaveValues()
     {
         waveLength.y      = mainWavesLengthSlider.value;
@@ -83,6 +183,7 @@ public class WaveController : MonoBehaviour
     }
 
 
+    // TODO: Move to Ocean
     private void GetWaveValues()
     {
         gravity            = waveMaterial.GetFloat ("_Gravity");
@@ -100,6 +201,7 @@ public class WaveController : MonoBehaviour
 
 
 
+    // TODO: Move to Ocean
     public void ResetWaves()
     {
         gravity            = defaultGravity;
@@ -126,7 +228,8 @@ public class WaveController : MonoBehaviour
 
     /// <summary>
     /// Pass in the vertex you want to get teh height of. 
-    /// Apply roughtly the same equation to it.
+    /// Apply roughtly the same equation as what is written 
+    /// in WaveShader.shader to get height
     /// </summary>
     /// <param name="verts"></param>
     public Vector3 GetVertexPosition(Vector3 vertex)
